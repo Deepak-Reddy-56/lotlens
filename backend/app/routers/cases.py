@@ -405,6 +405,80 @@ async def create_action(
 
 
 @router.post(
+    "/cases/{case_id}/memory-sync/retry",
+    response_model=dict,
+    summary="Retry a failed verified-outcome memory write",
+)
+async def retry_memory_sync(
+    case_id: str,
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    case = await load_case(session, case_id)
+    hindsight: HindsightService | None = getattr(request.app.state, "hindsight", None)
+    if hindsight is None:
+        raise HTTPException(status_code=503, detail="Hindsight is not configured")
+
+    sync_result = await session.execute(
+        select(MemorySync)
+        .where(MemorySync.case_id == case.id, MemorySync.status.in_(["failed", "pending"]))
+        .order_by(MemorySync.created_at.desc())
+        .limit(1)
+    )
+    sync = sync_result.scalar_one_or_none()
+    if sync is None:
+        raise HTTPException(status_code=404, detail="No failed or pending memory sync found")
+
+    verification_result = await session.execute(
+        select(Verification).where(Verification.id == sync.verification_id)
+    )
+    verification = verification_result.scalar_one_or_none()
+    if verification is None:
+        raise HTTPException(status_code=409, detail="Verification record is missing")
+
+    action_result = await session.execute(
+        select(CorrectiveAction).where(CorrectiveAction.id == verification.action_id)
+    )
+    action = action_result.scalar_one_or_none()
+    if action is None:
+        raise HTTPException(status_code=409, detail="Corrective action record is missing")
+
+    memory_content = (
+        f"Canonical case ID: {case.case_code}. "
+        f"Supplier: {case.supplier.name} ({case.supplier.code}). "
+        f"Component: {case.component.name} ({case.component.code}). "
+        f"Lot: {case.lot.code}. Symptoms: {case.symptoms}. "
+        f"Investigation: {case.description}. "
+        f"Root-cause status: {case.root_cause_status}. "
+        f"Confirmed root cause: {case.root_cause or 'not confirmed'}. "
+        f"Corrective action: {action.description}. "
+        f"Action outcome: {action.outcome}. "
+        f"QA verifier: {verification.verified_by}. "
+        f"QA notes: {verification.notes}. "
+        "This is a QA-verified LotLens investigation outcome."
+    )
+    try:
+        await hindsight.retain_verified_outcome(
+            case_code=case.case_code,
+            content=memory_content,
+            verification_id=verification.id,
+        )
+        sync.status = "synced"
+        sync.error_message = None
+    except Exception as exc:
+        sync.status = "failed"
+        sync.error_message = type(exc).__name__
+        await session.commit()
+        raise HTTPException(
+            status_code=502,
+            detail="Hindsight memory retry failed. The QA verification remains saved.",
+        ) from exc
+
+    await session.commit()
+    return {"case_code": case.case_code, "memory_sync_status": sync.status}
+
+
+@router.post(
     "/cases/{case_id}/verify",
     response_model=VerificationOut,
     status_code=status.HTTP_201_CREATED,
