@@ -120,7 +120,7 @@ async def create_case(payload: CaseCreate, session: AsyncSession = Depends(get_s
         session.add(lot)
         await session.flush()
 
-    case_code = f"LOT-{uuid.uuid4().hex[:8].upper()}"
+    case_code = f"LOT-NEW-{uuid.uuid4().int % 1_000_000:06d}"
     case = DefectCase(
         case_code=case_code,
         supplier_id=supplier.id,
