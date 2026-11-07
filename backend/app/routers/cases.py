@@ -203,97 +203,127 @@ async def seed_demo_cases(session: AsyncSession = Depends(get_session)):
         },
     ]
     created = 0
+    backfilled_verifications = 0
     for item in seed:
-        existing = await session.execute(
+        existing_result = await session.execute(
             select(DefectCase).where(DefectCase.case_code == item["case_code"])
         )
-        if existing.scalar_one_or_none():
-            continue
+        case = existing_result.scalar_one_or_none()
 
-        supplier_result = await session.execute(
-            select(Supplier).where(Supplier.code == item["supplier_code"])
-        )
-        supplier = supplier_result.scalar_one_or_none()
-        if supplier is None:
-            supplier = Supplier(code=item["supplier_code"], name=item["supplier_name"])
-            session.add(supplier)
-            await session.flush()
-
-        component_result = await session.execute(
-            select(Component).where(Component.code == "BMS-CONN")
-        )
-        component = component_result.scalar_one_or_none()
-        if component is None:
-            component = Component(code="BMS-CONN", name="BMS Connector")
-            session.add(component)
-            await session.flush()
-
-        lot_result = await session.execute(
-            select(ProductionLot).where(
-                ProductionLot.code == item["lot_code"],
-                ProductionLot.supplier_id == supplier.id,
-                ProductionLot.component_id == component.id,
+        if case is None:
+            supplier_result = await session.execute(
+                select(Supplier).where(Supplier.code == item["supplier_code"])
             )
-        )
-        lot = lot_result.scalar_one_or_none()
-        if lot is None:
-            lot = ProductionLot(
-                code=item["lot_code"],
+            supplier = supplier_result.scalar_one_or_none()
+            if supplier is None:
+                supplier = Supplier(code=item["supplier_code"], name=item["supplier_name"])
+                session.add(supplier)
+                await session.flush()
+
+            component_result = await session.execute(
+                select(Component).where(Component.code == "BMS-CONN")
+            )
+            component = component_result.scalar_one_or_none()
+            if component is None:
+                component = Component(code="BMS-CONN", name="BMS Connector")
+                session.add(component)
+                await session.flush()
+
+            lot_result = await session.execute(
+                select(ProductionLot).where(
+                    ProductionLot.code == item["lot_code"],
+                    ProductionLot.supplier_id == supplier.id,
+                    ProductionLot.component_id == component.id,
+                )
+            )
+            lot = lot_result.scalar_one_or_none()
+            if lot is None:
+                lot = ProductionLot(
+                    code=item["lot_code"],
+                    supplier_id=supplier.id,
+                    component_id=component.id,
+                )
+                session.add(lot)
+                await session.flush()
+
+            case = DefectCase(
+                case_code=item["case_code"],
                 supplier_id=supplier.id,
                 component_id=component.id,
+                lot_id=lot.id,
+                symptoms=item["symptoms"],
+                description=item["description"],
+                severity=item["severity"],
+                status=item["status"],
+                root_cause_status=item["root_cause_status"],
+                root_cause=item["root_cause"],
             )
-            session.add(lot)
+            session.add(case)
+            await session.flush()
+            created += 1
+
+        action_result = await session.execute(
+            select(CorrectiveAction).where(
+                CorrectiveAction.case_id == case.id,
+                CorrectiveAction.description == item["action"],
+            )
+        )
+        action = action_result.scalar_one_or_none()
+        if action is None:
+            action = CorrectiveAction(
+                case_id=case.id,
+                description=item["action"],
+                outcome=item["outcome"],
+            )
+            session.add(action)
             await session.flush()
 
-        case = DefectCase(
-            case_code=item["case_code"],
-            supplier_id=supplier.id,
-            component_id=component.id,
-            lot_id=lot.id,
-            symptoms=item["symptoms"],
-            description=item["description"],
-            severity=item["severity"],
-            status=item["status"],
-            root_cause_status=item["root_cause_status"],
-            root_cause=item["root_cause"],
-        )
-        session.add(case)
-        await session.flush()
-        action = CorrectiveAction(
-            case_id=case.id,
-            description=item["action"],
-            outcome=item["outcome"],
-        )
-        session.add(action)
-        await session.flush()
-        session.add(
-            Verification(
-                case_id=case.id,
-                action_id=action.id,
-                action_outcome=item["outcome"],
-                root_cause_status=item["root_cause_status"],
-                confirmed_root_cause=(
-                    item["root_cause"]
-                    if item["root_cause_status"] == "confirmed"
-                    else None
-                ),
-                notes="Synthetic seed verification record; not real manufacturing data.",
-                verified_by="Synthetic QA fixture",
+        verification_result = await session.execute(
+            select(Verification).where(
+                Verification.case_id == case.id,
+                Verification.action_id == action.id,
             )
         )
-        session.add(
-            AuditEvent(
-                case_id=case.id,
-                actor="demo-seeder",
-                event_type="demo_case_seeded",
-                detail="Synthetic POC case with canonical QA outcome. Not real manufacturing data.",
+        verification = verification_result.scalar_one_or_none()
+        if verification is None:
+            # Backfill canonical QA history for previously seeded demo rows.
+            session.add(
+                Verification(
+                    case_id=case.id,
+                    action_id=action.id,
+                    action_outcome=action.outcome,
+                    root_cause_status=case.root_cause_status,
+                    confirmed_root_cause=(
+                        case.root_cause if case.root_cause_status == "confirmed" else None
+                    ),
+                    notes="Synthetic seed verification record; not real manufacturing data.",
+                    verified_by="Synthetic QA fixture",
+                )
             )
-        )
-        created += 1
+            session.add(
+                AuditEvent(
+                    case_id=case.id,
+                    actor="demo-seeder",
+                    event_type="demo_qa_verification_backfilled",
+                    detail="Synthetic QA history for the canonical POC case.",
+                )
+            )
+            backfilled_verifications += 1
+
+        if created and case.case_code == item["case_code"]:
+            session.add(
+                AuditEvent(
+                    case_id=case.id,
+                    actor="demo-seeder",
+                    event_type="demo_case_seeded",
+                    detail="Synthetic POC case. Not real manufacturing data.",
+                )
+            )
 
     await session.commit()
     return {
         "created": created,
+        "backfilled_verifications": backfilled_verifications,
         "total_seed_cases": len(seed),
         "note": "Synthetic canonical records only. This endpoint does not write to Hindsight.",
     }
