@@ -16,7 +16,7 @@ python -m pip install -r backend/requirements.txt
 Copy the root env template if not already present and set the Hindsight values:
 
 ```powershell
-Copy-Item .env.example .env
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
 notepad .env
 ```
 
