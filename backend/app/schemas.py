@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 Severity = Literal["low", "medium", "high", "critical"]
 CaseStatus = Literal["OPEN", "INVESTIGATING", "AWAITING_QA", "VERIFIED"]
@@ -41,6 +41,14 @@ class CaseCreate(BaseModel):
 
 class ActionCreate(BaseModel):
     description: str = Field(min_length=8, max_length=4000)
+
+    @field_validator("description")
+    @classmethod
+    def normalize_description(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 8:
+            raise ValueError("description must contain at least 8 non-whitespace characters")
+        return value
 
 
 class ActionOut(BaseModel):
