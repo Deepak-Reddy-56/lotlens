@@ -105,3 +105,57 @@ def test_investigation_context_exposes_only_canonical_case_codes():
     assert context.unlinked_case_codes == ["LOT-POC-999"]
     assert "LOT-POC-999" in context.prompt
     assert "do not cite as evidence" in context.prompt
+
+
+def test_demo_seed_is_idempotent_and_backfills_qa_verifications():
+    import asyncio
+
+    from sqlalchemy import select
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+    from app.models import Base, CorrectiveAction, DefectCase, Verification
+    from app.routers.cases import seed_demo_cases
+
+    async def scenario():
+        engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+        try:
+            async with engine.begin() as connection:
+                await connection.run_sync(Base.metadata.create_all)
+
+            session_factory = async_sessionmaker(engine, expire_on_commit=False)
+            async with session_factory() as session:
+                first = await seed_demo_cases(session)
+                assert first["created"] == 3
+                assert first["backfilled_verifications"] == 3
+
+                case_result = await session.execute(
+                    select(DefectCase).where(DefectCase.case_code == "LOT-POC-001")
+                )
+                case = case_result.scalar_one()
+                verification_result = await session.execute(
+                    select(Verification).where(Verification.case_id == case.id)
+                )
+                verification = verification_result.scalar_one()
+                await session.delete(verification)
+                await session.commit()
+
+                second = await seed_demo_cases(session)
+                assert second["created"] == 0
+                assert second["backfilled_verifications"] == 1
+
+                verification_rows = await session.execute(select(Verification))
+                assert len(verification_rows.scalars().all()) == 3
+
+                action_rows = await session.execute(select(CorrectiveAction))
+                assert len(action_rows.scalars().all()) == 3
+
+                third = await seed_demo_cases(session)
+                assert third["created"] == 0
+                assert third["backfilled_verifications"] == 0
+
+                verification_rows = await session.execute(select(Verification))
+                assert len(verification_rows.scalars().all()) == 3
+        finally:
+            await engine.dispose()
+
+    asyncio.run(scenario())
