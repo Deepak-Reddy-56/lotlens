@@ -53,6 +53,7 @@ class CaseOut(BaseModel):
     root_cause_status: str
     root_cause: str | None
     created_at: datetime
+    actions: list[ActionOut] = []
 
 
 class ActionCreate(BaseModel):
