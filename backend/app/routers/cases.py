@@ -108,6 +108,7 @@ async def create_case(payload: CaseCreate, session: AsyncSession = Depends(get_s
         select(ProductionLot).where(
             ProductionLot.code == payload.lot_code,
             ProductionLot.supplier_id == supplier.id,
+            ProductionLot.component_id == component.id,
         )
     )
     lot = lot_result.scalar_one_or_none()
@@ -231,6 +232,7 @@ async def seed_demo_cases(session: AsyncSession = Depends(get_session)):
             select(ProductionLot).where(
                 ProductionLot.code == item["lot_code"],
                 ProductionLot.supplier_id == supplier.id,
+                ProductionLot.component_id == component.id,
             )
         )
         lot = lot_result.scalar_one_or_none()
