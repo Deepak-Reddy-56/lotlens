@@ -80,7 +80,7 @@ class DefectCase(Base):
     lot: Mapped[ProductionLot] = relationship(back_populates="cases")
     actions: Mapped[list["CorrectiveAction"]] = relationship(
         back_populates="case", cascade="all, delete-orphan",
-        order_by="(CorrectiveAction.created_at, CorrectiveAction.id)",
+        order_by=lambda: (CorrectiveAction.created_at, CorrectiveAction.id),
     )
     investigations: Mapped[list["Investigation"]] = relationship(
         back_populates="case", cascade="all, delete-orphan"
