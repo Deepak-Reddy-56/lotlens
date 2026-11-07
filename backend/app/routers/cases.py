@@ -342,7 +342,7 @@ async def investigate_case(
             status_code=502, detail=f"Hindsight Reflect failed: {type(exc).__name__}"
         ) from exc
 
-    mentioned_codes = set(re.findall(r"\bLOT-[A-Z0-9]+(?:-[A-Z0-9]+)*\b", answer))
+    mentioned_codes = set(re.findall(r"\bLOT-[A-Z0-9]{2,}-[A-Z0-9]{3,}(?:-[A-Z0-9]{3,})*\b", answer))
     allowed_codes = {case.case_code for case in all_cases}
     citation_warnings = sorted(mentioned_codes - allowed_codes)
 
