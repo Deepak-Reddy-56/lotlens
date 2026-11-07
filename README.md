@@ -13,6 +13,7 @@ LotLens is a proposed Hindsight-powered manufacturing investigation agent. It he
 - [Six-role engineering board](docs/ENGINEERING_BOARD.md)
 - [Hindsight memory design](docs/MEMORY_DESIGN.md)
 - [Hindsight Cloud setup and smoke test](docs/HINDSIGHT_SETUP.md)
+- [Hindsight proof-of-concept results](docs/POC_RESULTS.md)
 - [Draft API contracts](docs/API_CONTRACTS.md)
 - [QA strategy](docs/QA_STRATEGY.md)
 - [Testing strategy](docs/TESTING_STRATEGY.md)
