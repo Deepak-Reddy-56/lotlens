@@ -11,6 +11,7 @@ export type CaseRecord = {
   root_cause_status: string;
   root_cause: string | null;
   created_at: string;
+  actions: ActionRecord[];
 };
 
 export type HistoricalCase = {
