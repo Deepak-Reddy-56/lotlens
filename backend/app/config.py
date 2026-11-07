@@ -12,9 +12,7 @@ load_dotenv(ROOT_DIR / ".env")
 class Settings:
     app_name: str = os.getenv("APP_NAME", "LotLens API")
     app_env: str = os.getenv("APP_ENV", "development")
-    database_url: str = os.getenv(
-        "DATABASE_URL", "sqlite+aiosqlite:///./lotlens.db"
-    )
+    database_url: str = os.getenv("DATABASE_URL") or "sqlite+aiosqlite:///./lotlens.db"
     hindsight_api_key: str | None = os.getenv("HINDSIGHT_API_KEY")
     hindsight_base_url: str = os.getenv(
         "HINDSIGHT_BASE_URL", "https://api.hindsight.vectorize.io"
