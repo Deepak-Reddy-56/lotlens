@@ -39,6 +39,19 @@ class CaseCreate(BaseModel):
     severity: Severity = "medium"
 
 
+class ActionCreate(BaseModel):
+    description: str = Field(min_length=8, max_length=4000)
+
+
+class ActionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: str
+    case_id: str
+    description: str
+    outcome: str
+    created_at: datetime
+
+
 class CaseOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: str
@@ -53,20 +66,7 @@ class CaseOut(BaseModel):
     root_cause_status: str
     root_cause: str | None
     created_at: datetime
-    actions: list[ActionOut] = []
-
-
-class ActionCreate(BaseModel):
-    description: str = Field(min_length=8, max_length=4000)
-
-
-class ActionOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: str
-    case_id: str
-    description: str
-    outcome: str
-    created_at: datetime
+    actions: list[ActionOut] = Field(default_factory=list)
 
 
 class VerificationCreate(BaseModel):
@@ -95,7 +95,7 @@ class HistoricalCaseOut(BaseModel):
     root_cause_status: str
     root_cause: str | None
     status: str
-    actions: list[ActionOut] = []
+    actions: list[ActionOut] = Field(default_factory=list)
 
 
 class InvestigationOut(BaseModel):
