@@ -14,3 +14,11 @@ coverage/
 .DS_Store
 .idea/
 .vscode/
+
+# Local application data
+*.db
+*.sqlite
+*.sqlite3
+*.log
+frontend/dist/
+frontend/node_modules/
