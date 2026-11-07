@@ -78,5 +78,4 @@ class HindsightService:
                 "verification_id": verification_id,
                 "record_type": "qa_verified_outcome",
             },
-            operation_id=f"lotlens-verification-{verification_id}",
         )
