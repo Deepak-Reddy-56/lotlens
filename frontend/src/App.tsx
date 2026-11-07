@@ -15,6 +15,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [investigation, setInvestigation] = useState<Investigation | null>(null);
   const [actions, setActions] = useState<ActionRecord[]>([]);
+  const [selectedActionId, setSelectedActionId] = useState("");
   const [health, setHealth] = useState<{status:string;hindsight_configured:boolean;bank_id:string}|null>(null);
   const [busy, setBusy] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,9 @@ export default function App() {
       setCases(rows); setHealth(status);
       const nextId = selectedId && rows.some((row) => row.id === selectedId) ? selectedId : rows[0]?.id ?? null;
       setSelectedId(nextId);
-      setActions(nextId ? rows.find((row) => row.id === nextId)?.actions ?? [] : []);
+      const nextActions = nextId ? rows.find((row) => row.id === nextId)?.actions ?? [] : [];
+      setActions(nextActions);
+      setSelectedActionId(nextActions[nextActions.length - 1]?.id ?? "");
     } catch (e) { setError(e instanceof Error ? e.message : "Unable to load LotLens."); }
     finally { setLoading(false); }
   }
@@ -54,13 +57,16 @@ export default function App() {
     try {
       const created = await api.createCase(form);
       setNotice(`Created ${created.case_code}.`); setShowNew(false); setForm(emptyForm);
-      await refresh(); setSelectedId(created.id); setActions([]);
+      await refresh(); setSelectedId(created.id); setActions([]); setSelectedActionId("");
     } catch(e) { setError(e instanceof Error ? e.message : "Could not create case."); }
     finally { setBusy(""); }
   }
 
   function selectCase(item: CaseRecord) {
-    setSelectedId(item.id); setActions(item.actions ?? []); setInvestigation(null); setActionText("");
+    const nextActions = item.actions ?? [];
+    setSelectedId(item.id); setActions(nextActions);
+    setSelectedActionId(nextActions[nextActions.length - 1]?.id ?? "");
+    setInvestigation(null); setActionText("");
   }
 
   async function investigate() {
@@ -79,15 +85,16 @@ export default function App() {
     setBusy("action"); setError(""); setNotice("");
     try {
       const action = await api.createAction(selected.id, actionText);
-      setActions((old) => [...old, action]); setActionText(""); setNotice("Corrective action recorded and awaiting QA.");
+      setActions((old) => [...old, action]); setSelectedActionId(action.id); setActionText(""); setNotice("Corrective action recorded and awaiting QA.");
       await refresh();
     } catch(e) { setError(e instanceof Error ? e.message : "Could not record corrective action."); }
     finally { setBusy(""); }
   }
 
   async function verifyAction(e: FormEvent) {
-    e.preventDefault(); if (!selected || !actions.length) return;
-    const action = actions[actions.length - 1];
+    e.preventDefault(); if (!selected || !selectedActionId) return;
+    const action = actions.find((item) => item.id === selectedActionId);
+    if (!action) { setError("Select a corrective action to verify."); return; }
     setBusy("verify"); setError(""); setNotice("");
     try {
       const result = await api.verify(selected.id, {
@@ -174,6 +181,7 @@ export default function App() {
               </form>
               {actions.length>0&&selected.status!=="VERIFIED"&&<form className="verify-form" onSubmit={verifyAction}>
                 <div className="divider-label">QA VERIFICATION</div>
+                <label className="wide-field">Action to verify<select required value={selectedActionId} onChange={e=>setSelectedActionId(e.target.value)}>{actions.map(action=><option key={action.id} value={action.id}>{action.description} · {action.outcome}</option>)}</select></label>
                 <label>Action outcome<select value={actionOutcome} onChange={e=>setActionOutcome(e.target.value)}><option value="effective">Effective</option><option value="ineffective">Ineffective</option><option value="inconclusive">Inconclusive</option></select></label>
                 <label>Root-cause status<select value={rootStatus} onChange={e=>setRootStatus(e.target.value)}><option value="unknown">Unknown</option><option value="suspected">Suspected</option><option value="confirmed">Confirmed</option><option value="disputed">Disputed</option></select></label>
                 {rootStatus==="confirmed"&&<label className="wide-field">Confirmed root cause<input required value={rootCause} onChange={e=>setRootCause(e.target.value)} placeholder="QA-confirmed cause"/></label>}
