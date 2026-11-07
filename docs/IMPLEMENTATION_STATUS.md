@@ -42,3 +42,11 @@ These are CI checks; the app has not yet been run locally by the project owner a
 - Reflect still returns narrative text; typed structured recommendations and larger benchmark are pending.
 - Memory sync has manual retry but no durable background outbox/deduplication worker. The public SDK docs do not document the previously considered operation_id retain parameter, so exact-once sync is not guaranteed across ambiguous network failures.
 - Full API integration and end-to-end tests remain to be added.
+
+
+## Latest implementation-review follow-up (2026-11-07)
+- Codex findings addressed: explicit QA action selection, reselect newly created action after refresh, whitespace-only confirmed cause rejection, full UUID case codes, and repeatable demo-seed backfill for missing QA verification rows.
+- Added SQLite integration regression for first seed, missing-verification backfill and repeat-seed idempotency.
+- Backend and frontend GitHub Actions passed on the latest implementation commit.
+- Five earlier inline review threads were resolved after code changes.
+- Local end-to-end use with the owner's Hindsight key has not yet been verified from the dashboard; it is the next manual acceptance gate.
