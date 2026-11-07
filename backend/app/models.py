@@ -47,7 +47,7 @@ class Component(Base):
 
 class ProductionLot(Base):
     __tablename__ = "production_lots"
-    __table_args__ = (UniqueConstraint("code", "supplier_id", name="uq_lot_supplier"),)
+    __table_args__ = (UniqueConstraint("code", "supplier_id", "component_id", name="uq_lot_supplier_component"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     code: Mapped[str] = mapped_column(String(80), index=True)
@@ -79,9 +79,7 @@ class DefectCase(Base):
     component: Mapped[Component] = relationship(back_populates="cases")
     lot: Mapped[ProductionLot] = relationship(back_populates="cases")
     actions: Mapped[list["CorrectiveAction"]] = relationship(
-        back_populates="case", cascade="all, delete-orphan"
-    )
-    investigations: Mapped[list["Investigation"]] = relationship(
+        back_populates="case", cascade="all, delete-orphan",\n        order_by="(CorrectiveAction.created_at, CorrectiveAction.id)"\n    )\n    investigations: Mapped[list["Investigation"]] = relationship(
         back_populates="case", cascade="all, delete-orphan"
     )
     verifications: Mapped[list["Verification"]] = relationship(
