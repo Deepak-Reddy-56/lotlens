@@ -55,3 +55,32 @@ Expected behaviour:
 - No root cause is transferred between cases based on symptom similarity alone.
 
 Run the seed command once only. Additional retain operations may incur charges and create duplicate memories.
+
+
+## Three-case hard-negative test (2026-11-07)
+
+### Execution
+- Retained LOT-POC-003 once using `--seed-counterexample`.
+- Ran Recall and Reflect against the three-case memory bank.
+
+### Observed result
+The generated comparison correctly represented:
+- LOT-POC-001: insufficient crimp height confirmed; crimp-tool recalibration and sampling action verified effective.
+- LOT-POC-002: reseating/rework ineffective; cause remains unconfirmed; crimp height neither confirmed nor ruled out.
+- LOT-POC-003: terminal-plating discontinuity confirmed in the synthetic QA record; separate plating-inspection action verified effective.
+
+The agent did not transfer LOT-POC-003's confirmed cause to LOT-POC-002 and recognised that matching symptoms do not establish matching root causes.
+
+### Assessment
+**Pass for this specific three-case scenario.** This is evidence that Hindsight recall plus constrained Reflect can support the intended case comparison. It is not yet proof of robust performance across a broader benchmark or of a production-ready reasoning engine.
+
+### Recommendation-quality findings
+The response also suggested applying Supplier B's inspection changes to all suppliers without cross-supplier evidence. It recommended SEM for LOT-POC-002 as a possible test, but did not establish that SEM is the necessary or proportionate next step.
+
+The smoke-test prompt has been updated to:
+- prohibit generalising supplier-specific corrective actions without supporting evidence or an approved validation plan;
+- require staged investigation, checking existing process records/measurements before proposing expensive laboratory analysis;
+- keep specialised tests as engineer-approved options unless justified by evidence.
+
+### Next validation
+Repeat Reflect after pulling the updated script. Then move beyond prompt-only checks: validate cited case IDs against canonical records, enforce a typed response schema, and test a larger fixed benchmark with hard negatives. Do not seed LOT-POC-003 again.
