@@ -435,7 +435,7 @@ async def verify_action(
         if payload.root_cause_status == "confirmed"
         else None
     )
-    case.status = "VERIFIED"
+    case.status = (\n        "VERIFIED"\n        if payload.action_outcome == "effective" and payload.root_cause_status == "confirmed"\n        else "INVESTIGATING"\n    )
 
     verification = Verification(
         case_id=case.id,
