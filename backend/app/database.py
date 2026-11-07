@@ -18,7 +18,7 @@ connect_args = (
 
 engine = create_async_engine(
     settings.database_url,
-    echo=settings.app_env == "development" and False,
+    echo=False,
     pool_pre_ping=True,
     connect_args=connect_args,
 )
