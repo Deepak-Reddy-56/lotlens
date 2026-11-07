@@ -288,6 +288,11 @@ async def investigate_case(
     session: AsyncSession = Depends(get_session),
 ):
     case = await load_case(session, case_id)
+    if case.status == "VERIFIED":
+        raise HTTPException(
+            status_code=409,
+            detail="This case is verified. Create a new linked investigation instead of reopening it.",
+        )
     hindsight: HindsightService | None = getattr(request.app.state, "hindsight", None)
     if hindsight is None:
         raise HTTPException(
