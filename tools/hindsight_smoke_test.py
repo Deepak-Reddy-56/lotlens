@@ -71,7 +71,7 @@ def main() -> int:
 
     client = Hindsight(base_url=base_url, api_key=api_key, timeout=60.0)
     try:
-        if args_create_bank := args.create_bank:
+        if args.create_bank:
             bank = client.create_bank(
                 bank_id=bank_id,
                 name="LotLens Development",
