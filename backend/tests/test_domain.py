@@ -29,3 +29,30 @@ def test_verification_allows_unknown_root_cause():
         verified_by="QA Engineer",
     )
     assert result.confirmed_root_cause is None
+
+
+def test_verification_rejects_whitespace_only_confirmed_root_cause():
+    try:
+        VerificationCreate(
+            action_id="action-1",
+            action_outcome="effective",
+            root_cause_status="confirmed",
+            confirmed_root_cause="   ",
+            verified_by="QA Engineer",
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Whitespace-only root cause must be rejected")
+
+
+def test_verification_trims_confirmed_root_cause_and_verifier():
+    result = VerificationCreate(
+        action_id="action-1",
+        action_outcome="effective",
+        root_cause_status="confirmed",
+        confirmed_root_cause="  Insufficient crimp height.  ",
+        verified_by="  QA Engineer  ",
+    )
+    assert result.confirmed_root_cause == "Insufficient crimp height."
+    assert result.verified_by == "QA Engineer"
