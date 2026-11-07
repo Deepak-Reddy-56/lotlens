@@ -79,8 +79,14 @@ class VerificationCreate(BaseModel):
 
     @model_validator(mode="after")
     def require_confirmed_cause(self) -> "VerificationCreate":
+        if self.confirmed_root_cause is not None:
+            self.confirmed_root_cause = self.confirmed_root_cause.strip() or None
+        if self.verified_by:
+            self.verified_by = self.verified_by.strip()
         if self.root_cause_status == "confirmed" and not self.confirmed_root_cause:
             raise ValueError("confirmed_root_cause is required when status is confirmed")
+        if not self.verified_by:
+            raise ValueError("verified_by must contain a name")
         return self
 
 
