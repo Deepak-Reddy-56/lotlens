@@ -71,3 +71,28 @@ Reflect is an AI reasoning operation and may incur usage charges. Run it only af
 
 Official SDK guide: https://docs.hindsight.vectorize.io/enterprise/python-sdk/
 Cloud connection guide: https://docs.hindsight.vectorize.io/cloud/api-integration/
+
+
+## 6. Distinct-cause hard-negative test
+
+After the first two synthetic cases have been seeded, add the third test case exactly once:
+
+```powershell
+python tools/hindsight_smoke_test.py --seed-counterexample
+```
+
+This adds synthetic LOT-POC-003: the same intermittent open-circuit symptom, but a separate QA-confirmed terminal-plating discontinuity cause and an effective verified action. It is deliberately distinct from LOT-POC-001 and LOT-POC-002.
+
+Then compare all available cases:
+
+```powershell
+python tools/hindsight_smoke_test.py --reflect
+```
+
+Expected behaviour:
+- LOT-POC-001: insufficient crimp height is confirmed; its corrective action is verified effective.
+- LOT-POC-002: reseating/rework was ineffective; root cause remains unconfirmed. Do not infer that the cause differs from LOT-POC-001 or that crimp height is ruled out.
+- LOT-POC-003: terminal-plating discontinuity is confirmed in this synthetic case; its separate corrective action is verified effective.
+- Never transfer one case's confirmed root cause to another case based on symptom similarity alone.
+
+Do not repeatedly run `--seed-counterexample`; retain is a memory write and may incur usage charges.
