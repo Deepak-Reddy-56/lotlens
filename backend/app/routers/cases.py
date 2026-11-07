@@ -209,8 +209,9 @@ async def seed_demo_cases(session: AsyncSession = Depends(get_session)):
             select(DefectCase).where(DefectCase.case_code == item["case_code"])
         )
         case = existing_result.scalar_one_or_none()
+        is_new_case = case is None
 
-        if case is None:
+        if is_new_case:
             supplier_result = await session.execute(
                 select(Supplier).where(Supplier.code == item["supplier_code"])
             )
@@ -310,7 +311,7 @@ async def seed_demo_cases(session: AsyncSession = Depends(get_session)):
             )
             backfilled_verifications += 1
 
-        if created and case.case_code == item["case_code"]:
+        if is_new_case:
             session.add(
                 AuditEvent(
                     case_id=case.id,
