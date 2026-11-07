@@ -42,7 +42,7 @@ Build a modular monolith with the following baseline:
 - No PDF/ERP/MES/IoT ingestion.
 - No autonomous root-cause certification or production action.
 - Narrative Reflect output is not a typed or calibrated diagnostic. A larger benchmark and structured validation are required.
-- API retry support exists for failed memory syncs; background retry/outbox processing is future work.
+- API retry support exists for failed memory syncs. The public Python SDK documentation does not document an idempotency `operation_id` argument for retain, so exactly-once delivery across ambiguous network failures is not guaranteed; use the verification reference in retain metadata and add a durable outbox/deduplication strategy before production.
 
 ## Follow-up decisions
 1. Add an authentication provider and organisation-level access control.
