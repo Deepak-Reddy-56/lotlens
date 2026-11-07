@@ -34,6 +34,19 @@ DEMO_CASES = [
     ),
 ]
 
+COUNTEREXAMPLE_CASE = (
+    "LOT-POC-003",
+    "Synthetic case LOT-POC-003: Supplier B, BMS connector, batch B204. "
+    "Symptom: intermittent open-circuit readings during vibration testing, "
+    "matching the symptom category in LOT-POC-001 and LOT-POC-002. QA-confirmed "
+    "root cause: a localized terminal plating discontinuity that caused contact "
+    "surface corrosion; this cause was established by the synthetic laboratory "
+    "inspection record for this case. Corrective action: reject the affected "
+    "terminal lot and tighten incoming plating-continuity inspection. QA verified "
+    "the action effective on the defined follow-up sample. This is synthetic "
+    "demonstration data and is intentionally a distinct confirmed cause."
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Test LotLens connectivity to Hindsight Cloud.")
@@ -51,6 +64,11 @@ def parse_args() -> argparse.Namespace:
         "--reflect",
         action="store_true",
         help="Run one Reflect call after Recall (may incur usage charges).",
+    )
+    parser.add_argument(
+        "--seed-counterexample",
+        action="store_true",
+        help="Retain one additional synthetic case with the same symptom but a different QA-confirmed cause (run once).",
     )
     return parser.parse_args()
 
@@ -94,6 +112,16 @@ def main() -> int:
                 )
                 print(f"Retained synthetic experience: {case_id}")
 
+        if args.seed_counterexample:
+            case_id, case_content = COUNTEREXAMPLE_CASE
+            client.retain(
+                bank_id=bank_id,
+                content=case_content,
+                context="LotLens synthetic manufacturing investigation hard-negative test",
+                metadata={"case_id": case_id, "dataset": "synthetic", "project": "lotlens"},
+            )
+            print(f"Retained synthetic counterexample: {case_id}")
+
         query = (
             "Find BMS connector intermittent open-circuit failures. "
             "Compare relevant supplier batches, corrective actions and whether QA "
@@ -109,8 +137,9 @@ def main() -> int:
             response: Any = client.reflect(
                 bank_id=bank_id,
                 query=(
-                    "Based only on the memories available, compare the BMS connector "
-                    "investigations. Identify supporting and disconfirming evidence, "
+                    "Based only on the memories available, compare cases LOT-POC-001, "
+                    "LOT-POC-002 and LOT-POC-003 if retrieved. Identify supporting "
+                    "and disconfirming evidence, "
                     "distinguish verified outcomes from unconfirmed causes, and state "
                     "what a quality engineer should investigate next. Apply these strict "
                     "evidence rules: (1) LOT-POC-002 has an explicitly unconfirmed root "
@@ -118,9 +147,13 @@ def main() -> int:
                     "that attempted action was ineffective, not that the underlying cause "
                     "differs from LOT-POC-001; (3) do not claim crimp height is ruled out; "
                     "(4) do not claim the LOT-POC-001 crimp corrective action was applied "
-                    "to batch A115 because no such fact is recorded; (5) state what is "
-                    "known, unknown, and what evidence would resolve the uncertainty. "
-                    "Never promote a hypothesis to a confirmed root cause."
+                    "to batch A115 because no such fact is recorded; (5) for LOT-POC-003, "
+                    "report its explicitly QA-confirmed terminal-plating cause and effective "
+                    "corrective action as facts only because they are in that case memory; "
+                    "(6) do not transfer LOT-POC-003's cause to LOT-POC-001 or LOT-POC-002; "
+                    "(7) state what is known, unknown, and what evidence would resolve "
+                    "uncertainty for each case. Never promote a hypothesis to a confirmed "
+                    "root cause."
                 ),
                 budget="low",
             )
