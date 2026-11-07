@@ -112,8 +112,15 @@ def main() -> int:
                     "Based only on the memories available, compare the BMS connector "
                     "investigations. Identify supporting and disconfirming evidence, "
                     "distinguish verified outcomes from unconfirmed causes, and state "
-                    "what a quality engineer should investigate next. Do not claim a "
-                    "confirmed root cause without verified evidence."
+                    "what a quality engineer should investigate next. Apply these strict "
+                    "evidence rules: (1) LOT-POC-002 has an explicitly unconfirmed root "
+                    "cause; (2) the failure of connector reseating/rework proves only that "
+                    "that attempted action was ineffective, not that the underlying cause "
+                    "differs from LOT-POC-001; (3) do not claim crimp height is ruled out; "
+                    "(4) do not claim the LOT-POC-001 crimp corrective action was applied "
+                    "to batch A115 because no such fact is recorded; (5) state what is "
+                    "known, unknown, and what evidence would resolve the uncertainty. "
+                    "Never promote a hypothesis to a confirmed root cause."
                 ),
                 budget="low",
             )
