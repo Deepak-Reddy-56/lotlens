@@ -39,7 +39,10 @@ export default function App() {
       setSelectedId(nextId);
       const nextActions = nextId ? rows.find((row) => row.id === nextId)?.actions ?? [] : [];
       setActions(nextActions);
-      setSelectedActionId(nextActions[nextActions.length - 1]?.id ?? "");
+      const preferredActionId = nextActions.some((action) => action.id === selectedActionId)
+        ? selectedActionId
+        : nextActions[nextActions.length - 1]?.id ?? "";
+      setSelectedActionId(preferredActionId);
     } catch (e) { setError(e instanceof Error ? e.message : "Unable to load LotLens."); }
     finally { setLoading(false); }
   }
