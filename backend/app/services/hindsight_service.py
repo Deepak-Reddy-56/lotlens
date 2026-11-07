@@ -8,7 +8,7 @@ from hindsight_client import Hindsight
 
 from app.config import settings
 
-CASE_CODE_PATTERN = re.compile(r"\bLOT-[A-Z0-9]+(?:-[A-Z0-9]+)*\b")
+CASE_CODE_PATTERN = re.compile(r"\bLOT-[A-Z0-9]{2,}-[A-Z0-9]{3,}(?:-[A-Z0-9]{3,})*\b")
 
 
 @dataclass
