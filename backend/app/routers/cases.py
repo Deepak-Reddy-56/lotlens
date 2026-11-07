@@ -265,12 +265,28 @@ async def seed_demo_cases(session: AsyncSession = Depends(get_session)):
             outcome=item["outcome"],
         )
         session.add(action)
+        await session.flush()
+        session.add(
+            Verification(
+                case_id=case.id,
+                action_id=action.id,
+                action_outcome=item["outcome"],
+                root_cause_status=item["root_cause_status"],
+                confirmed_root_cause=(
+                    item["root_cause"]
+                    if item["root_cause_status"] == "confirmed"
+                    else None
+                ),
+                notes="Synthetic seed verification record; not real manufacturing data.",
+                verified_by="Synthetic QA fixture",
+            )
+        )
         session.add(
             AuditEvent(
                 case_id=case.id,
                 actor="demo-seeder",
                 event_type="demo_case_seeded",
-                detail="Synthetic POC case. Not real manufacturing data.",
+                detail="Synthetic POC case with canonical QA outcome. Not real manufacturing data.",
             )
         )
         created += 1
