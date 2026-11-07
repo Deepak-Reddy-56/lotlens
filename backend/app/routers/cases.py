@@ -35,7 +35,7 @@ from app.services.hindsight_service import HindsightService
 from app.services.investigation_service import build_investigation_context
 
 router = APIRouter(prefix="/api/v1", tags=["LotLens"])
-CODE_RE = re.compile(r"^LOT-[A-Z0-9]+-\d{3,}$")
+CODE_RE = re.compile(r"^LOT-[A-Z0-9]+(?:-[A-Z0-9]+)*$")
 
 
 def case_query():
@@ -120,7 +120,7 @@ async def create_case(payload: CaseCreate, session: AsyncSession = Depends(get_s
         session.add(lot)
         await session.flush()
 
-    case_code = f"LOT-NEW-{uuid.uuid4().int % 1_000_000:06d}"
+    case_code = f"LOT-NEW-{uuid.uuid4().hex[:8].upper()}"
     case = DefectCase(
         case_code=case_code,
         supplier_id=supplier.id,
@@ -340,7 +340,7 @@ async def investigate_case(
             status_code=502, detail=f"Hindsight Reflect failed: {type(exc).__name__}"
         ) from exc
 
-    mentioned_codes = set(re.findall(r"\bLOT-[A-Z0-9]+-\d{3,}\b", answer))
+    mentioned_codes = set(re.findall(r"\bLOT-[A-Z0-9]+(?:-[A-Z0-9]+)*\b", answer))
     allowed_codes = {case.case_code for case in all_cases}
     citation_warnings = sorted(mentioned_codes - allowed_codes)
 
