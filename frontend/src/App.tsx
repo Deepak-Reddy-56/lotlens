@@ -88,8 +88,9 @@ export default function App() {
     setBusy("action"); setError(""); setNotice("");
     try {
       const action = await api.createAction(selected.id, actionText);
-      setActions((old) => [...old, action]); setSelectedActionId(action.id); setActionText(""); setNotice("Corrective action recorded and awaiting QA.");
+      setActions((old) => [...old, action]); setActionText(""); setNotice("Corrective action recorded and awaiting QA.");
       await refresh();
+      setSelectedActionId(action.id);
     } catch(e) { setError(e instanceof Error ? e.message : "Could not record corrective action."); }
     finally { setBusy(""); }
   }
