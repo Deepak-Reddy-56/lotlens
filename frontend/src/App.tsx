@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Activity, AlertTriangle, ArrowRight, BrainCircuit, Check, ClipboardCheck, Factory, FileSearch, Plus, RefreshCw, Search, ShieldCheck, Sparkles, X } from "lucide-react";
 import { api, type ActionRecord, type CaseRecord, type Investigation } from "./api";
 
@@ -200,6 +200,6 @@ export default function App() {
   </div>;
 }
 
-function Metric({icon,label,value,tone,hint}:{icon:React.ReactNode;label:string;value:string|number;tone:string;hint:string}) {
+function Metric({icon,label,value,tone,hint}:{icon:ReactNode;label:string;value:string|number;tone:string;hint:string}) {
   return <div className="metric"><div className={`metric-icon ${tone}`}>{icon}</div><span>{label}</span><b>{value}</b><small>{hint}</small></div>;
 }
