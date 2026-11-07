@@ -35,7 +35,7 @@ from app.services.hindsight_service import HindsightService
 from app.services.investigation_service import build_investigation_context
 
 router = APIRouter(prefix="/api/v1", tags=["LotLens"])
-CODE_RE = re.compile(r"^LOT-[A-Z0-9]+(?:-[A-Z0-9]+)*$")
+CODE_RE = re.compile(r"^LOT-[A-Z0-9]{2,}-[A-Z0-9]{3,}(?:-[A-Z0-9]{3,})*$")
 
 
 def case_query():
@@ -120,7 +120,7 @@ async def create_case(payload: CaseCreate, session: AsyncSession = Depends(get_s
         session.add(lot)
         await session.flush()
 
-    case_code = f"LOT-NEW-{uuid.uuid4().hex[:8].upper()}"
+    case_code = f"LOT-NEW-{uuid.uuid4().hex.upper()}"
     case = DefectCase(
         case_code=case_code,
         supplier_id=supplier.id,
