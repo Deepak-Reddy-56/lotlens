@@ -153,7 +153,14 @@ def main() -> int:
                     "(6) do not transfer LOT-POC-003's cause to LOT-POC-001 or LOT-POC-002; "
                     "(7) state what is known, unknown, and what evidence would resolve "
                     "uncertainty for each case. Never promote a hypothesis to a confirmed "
-                    "root cause."
+                    "root cause. (8) Do not generalise a corrective action verified for "
+                    "one supplier to all suppliers without supporting cross-supplier "
+                    "evidence or an explicitly approved validation plan. (9) Present "
+                    "expensive laboratory tests such as SEM as options requiring engineer "
+                    "approval, not as mandatory conclusions unless the evidence warrants "
+                    "them. Prefer staged investigation: check available process records "
+                    "and measurements first, then propose specialised lab analysis when "
+                    "the evidence gap justifies it."
                 ),
                 budget="low",
             )
