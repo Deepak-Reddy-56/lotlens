@@ -291,7 +291,7 @@ def test_failed_memory_retain_preserves_qa_and_retry_marks_sync_complete(api_env
 
     assert verification.status_code == 201, verification.text
     assert verification.json()["memory_sync_status"] == "failed"
-    assert "RuntimeError" in verification.json()["memory_sync_error"]
+    assert "Hindsight memory sync failed" in verification.json()["memory_sync_error"]
     assert client.get(f"/api/v1/cases/{case_id}").json()["status"] == "VERIFIED"
     assert len(hindsight.retain_calls) == 1
 
