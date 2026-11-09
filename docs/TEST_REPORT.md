@@ -2,7 +2,7 @@
 
 **Report type:** Automated backend/API verification and manual acceptance checklist  
 **Application version:** Phase 2 — first investigation vertical slice  
-**Branch:** `feature/phase-2-vertical-slice`  
+**Branch:** `main` (merged from `feature/phase-2-vertical-slice` through PR #8 on 9 November 2026)  
 **Test data:** Synthetic POC records only; no production manufacturing data  
 **Report status:** Backend automated tests passed in CI and in the project owner's local environment; live integration and browser acceptance remain pending
 
@@ -78,17 +78,18 @@ These records intentionally test the distinction between similar symptoms and di
 | Check | Command / source | Result |
 |---|---|---|
 | Backend compile | `PYTHONPATH=. python -m compileall -q app tests` in CI | **Passed** |
-| Backend automated tests (CI) | `PYTHONPATH=. python -m pytest -q tests` | **29 passed in 3.91 seconds** |
+| Backend automated tests (CI) | `PYTHONPATH=. python -m pytest -q tests` | **29 passed in 3.73 seconds** |
 | Backend automated tests (local) | `$env:PYTHONPATH = "backend"; python -m pytest backend/tests -v` | **Passed; confirmed by project owner. Local console transcript and runtime were not retained in this report.** |
-| Frontend production build | `npm run build` via GitHub Actions | **Passed** on frontend styling commit |
+| Frontend production build | `npm run build` via GitHub Actions | **Passed** in 1.69 seconds on the cleaned PR head |
 | Live Hindsight smoke test | Real development bank | Not run |
 | Full local browser acceptance | Owner's Windows development environment | Pending |
 
-**Backend CI commit:** `8170e554759bc9afc3b41882458d980b5b4ccccf`  
-**Backend CI execution:** 9 November 2026, GitHub Actions job `test` — [view run](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42624673081/job/129185255925)  
-**Frontend build execution:** GitHub Actions — [view build](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42623569850/job/129181519992)
+**Latest pre-merge CI commit:** `803b6b6abc66d0953abbb5de509afee08d34c4aa`  
+**Backend CI execution:** 9 November 2026, workflow run [42627097297](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42627097297) — 29 tests passed in 3.73 seconds.  
+**Frontend build execution:** 9 November 2026, workflow run [42627097227](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42627097227) — production build passed in 1.69 seconds.  
+**Merge commit:** `d4e45bdf8e5faf67e11d3be1df7d80b1ab359868`.
 
-The backend CI result verifies the suite at the test-suite commit. The frontend build was run on the frontend styling commit; no frontend source files were changed in the test-suite commits. The owner-confirmed local run verifies that the backend pytest suite also executes successfully in the local Windows virtual environment, but the terminal output was not archived as a separate evidence attachment.
+Both checks completed successfully on the cleaned pull-request head before PR #8 was squash-merged into `main`. The project owner also confirmed a successful local Windows pytest run; the terminal transcript and exact local runtime were not archived.
 
 ## 6. Manual acceptance checklist
 
