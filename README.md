@@ -21,6 +21,7 @@ LotLens is a Hindsight-powered manufacturing investigation agent. It helps quali
 - [Draft API contracts](docs/API_CONTRACTS.md)
 - [QA strategy](docs/QA_STRATEGY.md)
 - [Testing strategy](docs/TESTING_STRATEGY.md)
+- [Test report and manual acceptance checklist](docs/TEST_REPORT.md)
 
 ## Architecture baseline
 - Backend: FastAPI + SQLAlchemy async.
@@ -89,6 +90,8 @@ DATABASE_URL=postgresql+asyncpg://lotlens:lotlens_dev_only@localhost:5432/lotlen
 The Compose credentials are local-development only. Do not reuse them in deployment.
 
 ## Tests
+
+The backend suite includes domain/schema, API integration, Hindsight failure-path and CORS preflight tests. API integration tests use isolated SQLite databases and a deterministic Hindsight test double, so they do not require a real Hindsight API key. See the [test report](docs/TEST_REPORT.md) for coverage, CI results, limitations and manual acceptance steps. The latest recorded backend run passed 29 tests.
 
 ```powershell
 python -m pip install pytest
