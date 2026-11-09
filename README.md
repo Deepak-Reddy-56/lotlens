@@ -22,7 +22,6 @@ LotLens is a Hindsight-powered manufacturing investigation agent. It helps quali
 - [QA strategy](docs/QA_STRATEGY.md)
 - [Testing strategy](docs/TESTING_STRATEGY.md)
 - [Test report and manual acceptance checklist](docs/TEST_REPORT.md)
-- [Submission package guide](docs/SUBMISSION_GUIDE.md)
 
 ## Architecture baseline
 - Backend: FastAPI + SQLAlchemy async.
