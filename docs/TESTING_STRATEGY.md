@@ -1,12 +1,12 @@
 # Testing Strategy — LotLens
 
-**Status:** Backend domain, API integration and local CORS tests are implemented. The current GitHub Actions backend run passed 29 tests. Evaluation targets remain provisional until measured on a larger curated dataset.
+**Status:** Backend domain, API integration and local CORS tests are implemented. The backend suite passed in GitHub Actions and the project owner confirmed a successful local Windows pytest run. Evaluation targets remain provisional until measured on a larger curated dataset.
 
 ## Current automated coverage
 
-### Backend CI
+### Backend CI and local verification
 
-GitHub Actions installs dependencies on Python 3.12, compiles the backend and tests, then runs pytest.
+GitHub Actions installs dependencies on Python 3.12, compiles the backend and tests, then runs pytest. The owner has also run the backend pytest suite successfully from the Windows PowerShell virtual environment.
 
 The current suite contains:
 - Domain/schema tests for case-code parsing, evidence validation, QA cause validation and demo-seed idempotency.
@@ -14,7 +14,7 @@ The current suite contains:
 - A deterministic Hindsight test double, covering Recall/Reflect/Retain success and selected failure modes without external network calls.
 - CORS preflight tests for the configured localhost and loopback frontend origins, plus rejection of an unlisted origin.
 
-Latest recorded run: **29 passed in 3.91 seconds**; compile check passed. See docs/TEST_REPORT.md for the execution record and manual acceptance checklist.
+Latest recorded CI run: **29 passed in 3.91 seconds**; compile check passed. Local owner-confirmed pytest run: **passed**; console transcript and runtime were not retained. See docs/TEST_REPORT.md for the execution record and manual acceptance checklist.
 
 ### Frontend CI
 
