@@ -1,33 +1,76 @@
 # Testing Strategy — LotLens
 
-## Test layers
-- Unit: domain rules, state transitions, schemas, evidence validation, memory payload mapping.
-- Integration: database repositories, Hindsight adapter (mocked and live sandbox), LLM adapter, memory-sync retry.
-- API: authentication, authorisation, validation, error envelopes, idempotency.
-- E2E: defect intake → investigation → engineer action → QA verification → memory retain → next investigation recall.
-- Regression: fixed synthetic benchmark and known failure scenarios.
+**Status:** Backend domain, API integration and local CORS tests are implemented. The backend suite passed in GitHub Actions and the project owner confirmed a successful local Windows pytest run. Evaluation targets remain provisional until measured on a larger curated dataset.
 
-## Required fixtures
-- Verified effective corrective action.
-- Verified ineffective corrective action.
-- Pending/unverified hypothesis.
-- Similar symptoms with different confirmed root causes.
-- Contradictory and incomplete cases.
-- Cross-organisation cases.
-- Duplicate events and provider outages.
+## Current automated coverage
 
-## Metrics
-- Recall@3 on a fixed set of synthetic investigation queries.
-- Percentage of recalled case references that resolve to canonical records.
-- Rate of unsupported/fabricated historical claims.
-- Correct surfacing of disconfirming cases.
-- Correct handling of ineffective actions.
-- End-to-end workflow pass rate.
-- Latency and error rate per dependency.
+### Backend CI and local verification
 
-## Initial acceptance targets (provisional; validate after baseline)
-- 100% validity for displayed historical case references in test set.
-- 0 unsupported confirmed-root-cause claims in controlled tests.
-- 100% denial of cross-organisation access tests.
-- 100% prevention of closing without QA verification.
-- Recall@3 target at least 80% on a curated 10-query benchmark; report actual results, do not claim general performance from small synthetic data.
+GitHub Actions installs dependencies on Python 3.12, compiles the backend and tests, then runs pytest. The owner has also run the backend pytest suite successfully from the Windows PowerShell virtual environment.
+
+The current suite contains:
+- Domain/schema tests for case-code parsing, evidence validation, QA cause validation and demo-seed idempotency.
+- API integration tests using a fresh temporary SQLite database per test.
+- A deterministic Hindsight test double, covering Recall/Reflect/Retain success and selected failure modes without external network calls.
+- CORS preflight tests for the configured localhost and loopback frontend origins, plus rejection of an unlisted origin.
+
+Latest recorded CI run: **29 passed in 3.91 seconds**; compile check passed. Local owner-confirmed pytest run: **passed**; console transcript and runtime were not retained. See docs/TEST_REPORT.md for the execution record and manual acceptance checklist.
+
+### Frontend CI
+
+GitHub Actions uses Node.js 22 and runs npm install followed by the TypeScript and Vite production build. The frontend styling commit's build passed. This is a compile/build check, not a browser E2E test.
+
+## Coverage implemented
+
+1. Unit/domain: canonical case-code extraction, UUID case codes, evidence packet construction, Verification schema validation, root-cause trimming and demo-seed idempotency/backfill.
+2. API integration: case creation/retrieval, invalid payload handling, action creation, AWAITING_QA transition, verified-case guards, case/action ownership checks, QA outcome transitions and memory-sync retry.
+3. Hindsight failure injection: unconfigured Hindsight, Recall timeout, Reflect failure, Retain failure after database commit, and successful retry.
+4. Evidence-integrity checks: only database-resolved historical case codes are returned as evidence; unlinked references and unvalidated case codes from Reflect are reported as warnings.
+5. Browser transport: CORS preflight for the two configured local Vite origins and rejection of an unlisted origin.
+
+## Remaining test layers
+
+1. Database integration: PostgreSQL CI service, supplier/lot uniqueness under concurrent requests, transaction rollback, and query ordering under PostgreSQL.
+2. Hindsight adapter integration: mocked SDK request/response mapping and a separately labelled live sandbox smoke test using a development bank.
+3. Browser E2E: defect intake → Recall → canonical validation → Reflect → engineer action → QA verification → Retain → later Recall.
+4. Regression benchmark: a fixed curated dataset containing same-symptom/different-cause records, unknown causes, ineffective actions, stale memories, unlinked references and contradictory evidence.
+5. Resilience: DB commit failures, ambiguous Retain timeouts, duplicate QA submissions, malformed/empty Reflect output, and retry concurrency.
+
+## Fixed synthetic fixtures
+
+- LOT-POC-001: Supplier A / A101; insufficient crimp height confirmed; corrective action effective.
+- LOT-POC-002: Supplier A / A115; same symptom; reseating/rework ineffective; root cause unconfirmed.
+- LOT-POC-003: Supplier B / B204; terminal-plating discontinuity confirmed; distinct corrective action effective.
+
+Do not treat the three-case demonstration as a statistically meaningful benchmark.
+
+## Metrics to record
+
+- Recall@3 per query and mean Recall@3 on a curated fixed test set.
+- Canonical reference validity: valid displayed case IDs / all displayed case IDs.
+- Unsupported confirmed-root-cause claim rate.
+- Correct preservation rate for unconfirmed causes.
+- Correct distinction rate for same-symptom/different-cause cases.
+- Correct surfacing rate for ineffective actions and disconfirming evidence.
+- Memory-sync success/retry rate and duplicate-retain rate.
+- API error rate and p50/p95 latency by dependency.
+
+## Provisional targets (not yet measured)
+
+- 100% of displayed case references resolve to canonical records.
+- 0 unsupported confirmed-root-cause claims on controlled hard negatives.
+- 100% pass for lifecycle invariants.
+- Recall@3 >= 80% on at least 20 curated queries before using the metric externally.
+- Report query-level results and failure cases; never claim general reliability based only on three seeded examples.
+
+## Failure injection currently covered
+
+- Hindsight not configured (HTTP 503).
+- Recall timeout (HTTP 502).
+- Reflect error (HTTP 502).
+- Retain failure after the QA database commit, with verification preserved and retry successful.
+- Unlinked recalled case references and unvalidated case IDs mentioned by Reflect.
+- Cross-case corrective-action verification attempt.
+- CORS preflight from expected local origins and rejection of an unlisted origin.
+
+Other dependency, transaction and concurrency failures remain on the future test plan.
