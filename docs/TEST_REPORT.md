@@ -2,9 +2,9 @@
 
 **Report type:** Automated backend/API verification and manual acceptance checklist  
 **Application version:** Phase 2 — first investigation vertical slice  
-**Branch:** \`feature/phase-2-vertical-slice\`  
+**Branch:** `feature/phase-2-vertical-slice`  
 **Test data:** Synthetic POC records only; no production manufacturing data  
-**Report status:** <badge>Automated CI passed</badge> Manual acceptance remains pending
+**Report status:** Automated CI passed; manual acceptance remains pending
 
 ## 1. Objective
 
@@ -22,7 +22,7 @@ This report distinguishes automated checks from manual acceptance steps. A passi
 | Test runner | pytest 9.2.0 |
 | External Hindsight dependency | Deterministic in-process test double; no live API calls |
 | Frontend build | Node.js 22, TypeScript and Vite |
-| CI workflows | \`.github/workflows/backend-ci.yml\` and \`.github/workflows/frontend-ci.yml\` |
+| CI workflows | `.github/workflows/backend-ci.yml` and `.github/workflows/frontend-ci.yml` |
 
 ## 3. Automated test coverage
 
@@ -76,14 +76,14 @@ These records intentionally test the distinction between similar symptoms and di
 
 | Check | Command / source | Result |
 |---|---|---|
-| Backend compile | \`PYTHONPATH=. python -m compileall -q app tests\` | **Passed** |
-| Backend automated tests | \`PYTHONPATH=. python -m pytest -q tests\` | **29 passed in 3.91 seconds** |
-| Frontend production build | \`npm run build\` via GitHub Actions | **Passed** on frontend styling commit |
+| Backend compile | `PYTHONPATH=. python -m compileall -q app tests` | **Passed** |
+| Backend automated tests | `PYTHONPATH=. python -m pytest -q tests` | **29 passed in 3.91 seconds** |
+| Frontend production build | `npm run build` via GitHub Actions | **Passed** on frontend styling commit |
 | Live Hindsight smoke test | Real development bank | Not run as part of automated CI |
 | Local browser acceptance | Owner's Windows development environment | Pending owner verification |
 
-**Backend CI commit:** \`8170e554759bc9afc3b41882458d980b5b4ccccf\`  
-**Backend CI execution:** 9 November 2026, GitHub Actions job \`test\` — [view run](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42624673081/job/129185255925)  
+**Backend CI commit:** `8170e554759bc9afc3b41882458d980b5b4ccccf`  
+**Backend CI execution:** 9 November 2026, GitHub Actions job `test` — [view run](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42624673081/job/129185255925)  
 **Frontend build execution:** GitHub Actions — [view build](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42623569850/job/129181519992)
 
 The backend checks were run on the test-suite commit. The frontend build was run on the earlier frontend styling commit; no frontend source files were changed in the test-suite commits.
@@ -92,7 +92,7 @@ The backend checks were run on the test-suite commit. The frontend build was run
 
 Run these checks after pulling the branch and starting the backend and frontend locally:
 
-1. Open the dashboard and confirm the browser can call \`/health\` and \`/api/v1/cases\` without CORS errors.
+1. Open the dashboard and confirm the browser can call `/health` and `/api/v1/cases` without CORS errors.
 2. Load demo data and confirm all three synthetic cases appear.
 3. Open LOT-POC-002 and run an investigation with the configured development Hindsight bank.
 4. Confirm recalled evidence is linked to canonical case records and inspect any unlinked-reference/citation warnings.
