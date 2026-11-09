@@ -21,29 +21,25 @@ Phase 2 — first investigation vertical slice, implemented on branch feature/ph
 - Submission-oriented test report with automated execution record and manual acceptance checklist.
 - GitHub Actions backend and frontend workflows.
 
-## CI status
+## Verification status
 
-Backend CI on commit 8170e554759bc9afc3b41882458d980b5b4ccccf:
-- Python compile check: passed.
-- Pytest: **29 passed in 3.91 seconds**.
+### Backend automated tests
+- GitHub Actions backend CI: Python compile check passed; **29 pytest tests passed in 3.91 seconds**.
+- Project owner's local Windows PowerShell run of `python -m pytest backend/tests -v`: **passed** (owner-confirmed; console transcript and local runtime version were not retained).
 
-Frontend TypeScript/Vite production build:
-- Passed on frontend styling commit dd9252b3bf35ce1f2dc108fe0ab29038d94dc67c.
+### Frontend build
+- Frontend TypeScript/Vite production build passed in GitHub Actions on styling commit `dd9252b3bf35ce1f2dc108fe0ab29038d94dc67c`.
 
-See docs/TEST_REPORT.md for job links, test scope, synthetic data, manual acceptance checklist and limitations.
-
-These are CI checks. The app has not yet been run locally by the project owner against their own Hindsight bank.
+See [docs/TEST_REPORT.md](TEST_REPORT.md) for test coverage, execution references, the local-test note, and manual acceptance checklist.
 
 ## Local end-to-end validation still required
-1. Pull feature/phase-2-vertical-slice.
-2. Install backend/requirements.txt.
-3. Preserve the existing root .env and verify Hindsight settings and database URL.
-4. Start FastAPI and the Vite frontend.
-5. Confirm browser requests to /health and /api/v1/cases complete without CORS errors.
-6. Seed canonical database records using POST /api/v1/demo/seed.
-7. Investigate LOT-POC-002 and inspect validated evidence/warnings.
-8. Record a corrective action and QA verification.
-9. Confirm Hindsight memory sync and run a later investigation to recall the verified outcome.
+The backend pytest run is not the same as a full local system acceptance test. The following integration checks remain to be completed and recorded:
+1. Start FastAPI and the Vite frontend using the owner's local development configuration.
+2. Confirm browser requests to /health and /api/v1/cases complete without CORS errors.
+3. Seed canonical database records using POST /api/v1/demo/seed.
+4. Investigate LOT-POC-002 against the owner's development Hindsight bank and inspect validated evidence/warnings.
+5. Record a corrective action and QA verification through the app.
+6. Confirm Hindsight memory sync and run a later investigation to recall the verified outcome.
 
 ## Not production-ready
 - No authentication or organisation-level isolation. Do not expose the development API publicly.
@@ -52,7 +48,7 @@ These are CI checks. The app has not yet been run locally by the project owner a
 - No PDF/ERP/MES/IoT ingestion.
 - Reflect still returns narrative text; typed structured recommendations and larger benchmark are pending.
 - Memory sync has manual retry but no durable background outbox/deduplication worker. Exact-once sync is not guaranteed across ambiguous network failures.
-- Live Hindsight, PostgreSQL and browser E2E verification remain outstanding.
+- Live Hindsight, PostgreSQL and full browser E2E verification remain outstanding.
 
 ## Latest implementation-review and test follow-up (2026-11-09)
 - Existing invariants retained: explicit QA action selection, whitespace-only confirmed cause rejection, full UUID case codes, and repeatable demo-seed backfill.
@@ -60,5 +56,6 @@ These are CI checks. The app has not yet been run locally by the project owner a
 - Added Hindsight failure-path tests for unconfigured service, Recall timeout, Reflect failure and failed Retain followed by retry.
 - Added CORS preflight tests for the two configured local frontend origins.
 - Backend CI passed all 29 tests and the compile check.
+- The project owner also confirmed that the local Windows pytest suite passes.
 - Frontend production build passed on the prior styling commit.
-- Local end-to-end use with the owner's Hindsight key remains the next manual acceptance gate.
+- Live Hindsight and browser-level workflow verification remain the next manual acceptance gates.
