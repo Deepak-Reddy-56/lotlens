@@ -22,6 +22,7 @@ LotLens is a Hindsight-powered manufacturing investigation agent. It helps quali
 - [QA strategy](docs/QA_STRATEGY.md)
 - [Testing strategy](docs/TESTING_STRATEGY.md)
 - [Test report and manual acceptance checklist](docs/TEST_REPORT.md)
+- [Submission package guide](docs/SUBMISSION_GUIDE.md)
 
 ## Architecture baseline
 - Backend: FastAPI + SQLAlchemy async.
@@ -91,13 +92,15 @@ The Compose credentials are local-development only. Do not reuse them in deploym
 
 ## Tests
 
-The backend suite includes domain/schema, API integration, Hindsight failure-path and CORS preflight tests. API integration tests use isolated SQLite databases and a deterministic Hindsight test double, so they do not require a real Hindsight API key. See the [test report](docs/TEST_REPORT.md) for coverage, CI results, limitations and manual acceptance steps. The latest recorded backend run passed 29 tests.
+The backend suite includes domain/schema, API integration, Hindsight failure-path and CORS preflight tests. API integration tests use isolated SQLite databases and a deterministic Hindsight test double, so they do not require a real Hindsight API key. The backend suite passed in GitHub Actions (29 tests) and the project owner has also confirmed a successful local Windows pytest run. The frontend TypeScript/Vite production build passed in GitHub Actions. These are automated checks, not proof of a full live Hindsight/browser E2E run.
+
+See the [test report](docs/TEST_REPORT.md) for coverage, execution references, limitations and manual acceptance steps.
 
 ```powershell
 python -m pip install pytest
 $env:PYTHONPATH = "backend"
 python -m compileall -q backend/app backend/tests
-python -m pytest backend/tests -q
+python -m pytest backend/tests -v
 ```
 
 ## Important limitations
