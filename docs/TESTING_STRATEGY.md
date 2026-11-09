@@ -1,29 +1,40 @@
 # Testing Strategy — LotLens
 
-Status: initial CI baseline exists. Evaluation targets remain provisional until measured.
+**Status:** Backend domain, API integration and local CORS tests are implemented. The current GitHub Actions backend run passed 29 tests. Evaluation targets remain provisional until measured on a larger curated dataset.
 
-## Current automated checks
+## Current automated coverage
 
-Backend GitHub Actions:
-- Python 3.12 dependency install
-- Python compile check
-- Pytest domain tests: valid case-code parsing, confirmed cause required, unknown cause allowed, whitespace-only confirmed cause rejected, confirmed cause/verifier trimming.
+### Backend CI
 
-Frontend GitHub Actions:
-- Node.js 22
-- npm install
-- TypeScript + Vite production build
+GitHub Actions installs dependencies on Python 3.12, compiles the backend and tests, then runs pytest.
 
-These checks do not yet prove a full API-to-Hindsight-to-browser journey.
+The current suite contains:
+- Domain/schema tests for case-code parsing, evidence validation, QA cause validation and demo-seed idempotency.
+- API integration tests using a fresh temporary SQLite database per test.
+- A deterministic Hindsight test double, covering Recall/Reflect/Retain success and selected failure modes without external network calls.
+- CORS preflight tests for the configured localhost and loopback frontend origins, plus rejection of an unlisted origin.
 
-## Test layers to add
+Latest recorded run: **29 passed in 3.91 seconds**; compile check passed. See docs/TEST_REPORT.md for the execution record and manual acceptance checklist.
 
-1. Unit: lifecycle transition matrix, canonical case-code parser, evidence packet builder, schema validation, memory payload format.
-2. Database integration: fresh SQLite and PostgreSQL schema, supplier/lot uniqueness, eager-loaded actions ordering, transaction rollback.
-3. API integration: case create/list, demo seed idempotency, investigation with mocked Recall/Reflect, action ownership, QA verification, memory sync failure and retry.
-4. Hindsight adapter: mock SDK tests plus a separately labelled live sandbox smoke test.
-5. E2E: defect intake → Recall → canonical validation → Reflect → engineer action → QA verification → Retain → later Recall.
-6. Regression: fixed synthetic benchmark containing same symptom/different causes, unconfirmed root causes, ineffective actions, stale memories, unlinked references and contradictory evidence.
+### Frontend CI
+
+GitHub Actions uses Node.js 22 and runs npm install followed by the TypeScript and Vite production build. The frontend styling commit's build passed. This is a compile/build check, not a browser E2E test.
+
+## Coverage implemented
+
+1. Unit/domain: canonical case-code extraction, UUID case codes, evidence packet construction, Verification schema validation, root-cause trimming and demo-seed idempotency/backfill.
+2. API integration: case creation/retrieval, invalid payload handling, action creation, AWAITING_QA transition, verified-case guards, case/action ownership checks, QA outcome transitions and memory-sync retry.
+3. Hindsight failure injection: unconfigured Hindsight, Recall timeout, Reflect failure, Retain failure after database commit, and successful retry.
+4. Evidence-integrity checks: only database-resolved historical case codes are returned as evidence; unlinked references and unvalidated case codes from Reflect are reported as warnings.
+5. Browser transport: CORS preflight for the two configured local Vite origins and rejection of an unlisted origin.
+
+## Remaining test layers
+
+1. Database integration: PostgreSQL CI service, supplier/lot uniqueness under concurrent requests, transaction rollback, and query ordering under PostgreSQL.
+2. Hindsight adapter integration: mocked SDK request/response mapping and a separately labelled live sandbox smoke test using a development bank.
+3. Browser E2E: defect intake → Recall → canonical validation → Reflect → engineer action → QA verification → Retain → later Recall.
+4. Regression benchmark: a fixed curated dataset containing same-symptom/different-cause records, unknown causes, ineffective actions, stale memories, unlinked references and contradictory evidence.
+5. Resilience: DB commit failures, ambiguous Retain timeouts, duplicate QA submissions, malformed/empty Reflect output, and retry concurrency.
 
 ## Fixed synthetic fixtures
 
@@ -52,12 +63,14 @@ Do not treat the three-case demonstration as a statistically meaningful benchmar
 - Recall@3 >= 80% on at least 20 curated queries before using the metric externally.
 - Report query-level results and failure cases; never claim general reliability based only on three seeded examples.
 
-## Failure injection
+## Failure injection currently covered
 
-- Hindsight 401/402/404, timeout and 5xx.
-- DB commit failure before memory write.
-- Memory write timeout after DB commit.
-- Duplicate QA submit and manual retry.
-- Empty/malformed Reflect response and unknown case references.
-- More than one corrective action for a case; QA selects the intended action.
-- PostgreSQL unavailable on startup and during request.
+- Hindsight not configured (HTTP 503).
+- Recall timeout (HTTP 502).
+- Reflect error (HTTP 502).
+- Retain failure after the QA database commit, with verification preserved and retry successful.
+- Unlinked recalled case references and unvalidated case IDs mentioned by Reflect.
+- Cross-case corrective-action verification attempt.
+- CORS preflight from expected local origins and rejection of an unlisted origin.
+
+Other dependency, transaction and concurrency failures remain on the future test plan.
