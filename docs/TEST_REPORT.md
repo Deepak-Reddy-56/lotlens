@@ -4,7 +4,7 @@
 **Application version:** Phase 2 — first investigation vertical slice  
 **Branch:** \`feature/phase-2-vertical-slice\`  
 **Test data:** Synthetic POC records only; no production manufacturing data  
-**Report status:** CI execution pending for the test-suite commit
+**Report status:** <badge>Automated CI passed</badge> Manual acceptance remains pending
 
 ## 1. Objective
 
@@ -16,10 +16,10 @@ This report distinguishes automated checks from manual acceptance steps. A passi
 
 | Item | Configuration |
 |---|---|
-| Backend runtime | Python 3.12 in GitHub Actions |
+| Backend runtime | Python 3.12.16 in GitHub Actions |
 | API framework | FastAPI |
 | Database under automated API tests | Isolated temporary SQLite database per test |
-| Test runner | pytest |
+| Test runner | pytest 9.2.0 |
 | External Hindsight dependency | Deterministic in-process test double; no live API calls |
 | Frontend build | Node.js 22, TypeScript and Vite |
 | CI workflows | \`.github/workflows/backend-ci.yml\` and \`.github/workflows/frontend-ci.yml\` |
@@ -35,15 +35,17 @@ The suite combines domain/schema tests, API integration tests, and CORS middlewa
 | DOM-03 | QA schema | Unknown root cause | Payload is accepted without a confirmed cause |
 | DOM-04 | QA schema | Whitespace-only confirmed cause | Validation rejects the payload |
 | DOM-05 | QA schema | Whitespace around cause/verifier | Values are trimmed |
-| DOM-06 | Evidence construction | Canonical and unlinked IDs in memory | Only canonical cases become evidence; unlinked IDs are flagged |
-| DOM-07 | Demo fixture | Repeated seed and missing QA verification | Seed is idempotent and missing verification is backfilled |
+| DOM-06 | Case reference parsing | New UUID case-code shape | UUID case code is extracted |
+| DOM-07 | Case reference parsing | Short or unrelated reference tokens | Tokens are rejected |
+| DOM-08 | Evidence construction | Canonical and unlinked IDs in memory | Only canonical cases become evidence; unlinked IDs are flagged |
+| DOM-09 | Demo fixture | Repeated seed and missing QA verification | Seed is idempotent and missing verification is backfilled |
 | API-01 | Defect intake | Create a new case and retrieve it | API returns a unique case code and persisted supplier/component/lot data |
 | API-02 | Validation | Invalid case and blank corrective action | API returns HTTP 422 |
 | API-03 | Corrective action | Record an engineer action | Case moves to AWAITING_QA |
 | API-04 | Lifecycle guard | Add action or investigate an already verified case | API returns HTTP 409 |
 | API-05 | QA ownership | Verify a case using another case's action | API returns HTTP 404 |
 | API-06 | Successful QA | Effective action plus confirmed root cause | Case becomes VERIFIED and Retain is invoked |
-| API-07 | QA negative outcomes | Ineffective/inconclusive action or unconfirmed/disputed cause | Case remains INVESTIGATING |
+| API-07 | QA negative outcomes | Ineffective/inconclusive action or unconfirmed/disputed cause | Case remains INVESTIGATING across four parameter combinations |
 | API-08 | Memory failure | Hindsight Retain fails after QA commit | Verification remains saved and sync status is failed |
 | API-09 | Memory recovery | Retry a failed Retain after service recovery | Sync status changes to synced |
 | API-10 | Evidence integrity | Recall canonical and unlinked case IDs; Reflect mentions an unknown ID | Canonical evidence is returned; unlinked and unvalidated IDs are warned |
@@ -51,13 +53,14 @@ The suite combines domain/schema tests, API integration tests, and CORS middlewa
 | API-12 | Dependency handling | Recall times out | Investigation returns HTTP 502 |
 | API-13 | Dependency handling | Reflect fails | Investigation returns HTTP 502 |
 | API-14 | Memory retry guard | Retry when no pending/failed sync exists | API returns HTTP 404 |
-| CORS-01 | Browser preflight | localhost Vite origin | Preflight returns HTTP 200 and matching allow-origin header |
-| CORS-02 | Browser preflight | 127.0.0.1 Vite origin | Preflight returns HTTP 200 and matching allow-origin header |
-| CORS-03 | Browser preflight | Unlisted external origin | Preflight is rejected |
+| CORS-01 | Browser preflight | Required localhost and loopback origins are configured | Both local Vite origins appear in the configured allowlist |
+| CORS-02 | Browser preflight | localhost Vite origin | Preflight returns HTTP 200 and matching allow-origin header |
+| CORS-03 | Browser preflight | 127.0.0.1 Vite origin | Preflight returns HTTP 200 and matching allow-origin header |
+| CORS-04 | Browser preflight | Unlisted external origin | Preflight is rejected |
 | CI-01 | Static validation | Compile backend application and test modules | Python compilation succeeds |
 | CI-02 | Frontend build | TypeScript check and Vite production build | Build succeeds |
 
-*The domain suite also contains additional case-code and fixture assertions; the detailed test functions and their assertions are the executable source of truth.*
+**Automated result:** 29 tests passed. The four QA negative-outcome combinations are executed as separate pytest cases.
 
 ## 4. Synthetic test dataset
 
@@ -73,15 +76,17 @@ These records intentionally test the distinction between similar symptoms and di
 
 | Check | Command / source | Result |
 |---|---|---|
-| Backend compile | \`PYTHONPATH=. python -m compileall -q app tests\` | Pending CI |
-| Backend automated tests | \`PYTHONPATH=. python -m pytest -q tests\` | Pending CI |
-| Frontend production build | \`npm run build\` | Existing frontend CI check; confirm on latest relevant frontend commit |
+| Backend compile | \`PYTHONPATH=. python -m compileall -q app tests\` | **Passed** |
+| Backend automated tests | \`PYTHONPATH=. python -m pytest -q tests\` | **29 passed in 3.91 seconds** |
+| Frontend production build | \`npm run build\` via GitHub Actions | **Passed** on frontend styling commit |
 | Live Hindsight smoke test | Real development bank | Not run as part of automated CI |
 | Local browser acceptance | Owner's Windows development environment | Pending owner verification |
 
-**CI commit under test:** \`8170e554759bc9afc3b41882458d980b5b4ccccf\`
+**Backend CI commit:** \`8170e554759bc9afc3b41882458d980b5b4ccccf\`  
+**Backend CI execution:** 9 November 2026, GitHub Actions job \`test\` — [view run](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42624673081/job/129185255925)  
+**Frontend build execution:** GitHub Actions — [view build](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42623569850/job/129181519992)
 
-Update this section with the exact GitHub Actions result, test count, and execution date after CI completes. Do not replace pending results with an assumed pass.
+The backend checks were run on the test-suite commit. The frontend build was run on the earlier frontend styling commit; no frontend source files were changed in the test-suite commits.
 
 ## 6. Manual acceptance checklist
 
@@ -112,4 +117,6 @@ The three seeded records are too small for a statistically meaningful retrieval 
 
 ## 8. Conclusion
 
-This report documents the verification scope and the expected behaviours for the first LotLens vertical slice. Final pass/fail conclusions must be based on the completed CI run and the manual acceptance checklist. The system remains a local development build and must not be exposed publicly or used with confidential production data until the security and operational release blockers are addressed.
+The first LotLens vertical slice passes the current automated backend compile and test checks, with 29 pytest cases passing. The frontend TypeScript/Vite build also passed on the styling commit. These results validate the covered domain rules, API behaviour, selected Hindsight failure modes, and local CORS policy.
+
+A live Hindsight smoke test and owner-run browser acceptance remain outstanding. The system remains a local development build and must not be exposed publicly or used with confidential production data until the security and operational release blockers are addressed.
