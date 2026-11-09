@@ -4,7 +4,7 @@
 **Application version:** Phase 2 — first investigation vertical slice  
 **Branch:** `feature/phase-2-vertical-slice`  
 **Test data:** Synthetic POC records only; no production manufacturing data  
-**Report status:** Automated CI passed; manual acceptance remains pending
+**Report status:** Backend automated tests passed in CI and in the project owner's local environment; live integration and browser acceptance remain pending
 
 ## 1. Objective
 
@@ -16,10 +16,11 @@ This report distinguishes automated checks from manual acceptance steps. A passi
 
 | Item | Configuration |
 |---|---|
-| Backend runtime | Python 3.12.16 in GitHub Actions |
+| Backend runtime in CI | Python 3.12.16 |
+| Local test environment | Windows PowerShell, project virtual environment (`.venv`); exact Python version not recorded |
 | API framework | FastAPI |
 | Database under automated API tests | Isolated temporary SQLite database per test |
-| Test runner | pytest 9.2.0 |
+| Test runner | pytest 9.2.0 in CI; local pytest version not recorded |
 | External Hindsight dependency | Deterministic in-process test double; no live API calls |
 | Frontend build | Node.js 22, TypeScript and Vite |
 | CI workflows | `.github/workflows/backend-ci.yml` and `.github/workflows/frontend-ci.yml` |
@@ -60,7 +61,7 @@ The suite combines domain/schema tests, API integration tests, and CORS middlewa
 | CI-01 | Static validation | Compile backend application and test modules | Python compilation succeeds |
 | CI-02 | Frontend build | TypeScript check and Vite production build | Build succeeds |
 
-**Automated result:** 29 tests passed. The four QA negative-outcome combinations are executed as separate pytest cases.
+**Automated CI result:** 29 tests passed. The four QA negative-outcome combinations are executed as separate pytest cases.
 
 ## 4. Synthetic test dataset
 
@@ -76,21 +77,22 @@ These records intentionally test the distinction between similar symptoms and di
 
 | Check | Command / source | Result |
 |---|---|---|
-| Backend compile | `PYTHONPATH=. python -m compileall -q app tests` | **Passed** |
-| Backend automated tests | `PYTHONPATH=. python -m pytest -q tests` | **29 passed in 3.91 seconds** |
+| Backend compile | `PYTHONPATH=. python -m compileall -q app tests` in CI | **Passed** |
+| Backend automated tests (CI) | `PYTHONPATH=. python -m pytest -q tests` | **29 passed in 3.91 seconds** |
+| Backend automated tests (local) | `$env:PYTHONPATH = "backend"; python -m pytest backend/tests -v` | **Passed; confirmed by project owner. Local console transcript and runtime were not retained in this report.** |
 | Frontend production build | `npm run build` via GitHub Actions | **Passed** on frontend styling commit |
-| Live Hindsight smoke test | Real development bank | Not run as part of automated CI |
-| Local browser acceptance | Owner's Windows development environment | Pending owner verification |
+| Live Hindsight smoke test | Real development bank | Not run |
+| Full local browser acceptance | Owner's Windows development environment | Pending |
 
 **Backend CI commit:** `8170e554759bc9afc3b41882458d980b5b4ccccf`  
 **Backend CI execution:** 9 November 2026, GitHub Actions job `test` — [view run](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42624673081/job/129185255925)  
 **Frontend build execution:** GitHub Actions — [view build](https://github.com/Deepak-Reddy-56/lotlens/actions/runs/42623569850/job/129181519992)
 
-The backend checks were run on the test-suite commit. The frontend build was run on the earlier frontend styling commit; no frontend source files were changed in the test-suite commits.
+The backend CI result verifies the suite at the test-suite commit. The frontend build was run on the frontend styling commit; no frontend source files were changed in the test-suite commits. The owner-confirmed local run verifies that the backend pytest suite also executes successfully in the local Windows virtual environment, but the terminal output was not archived as a separate evidence attachment.
 
 ## 6. Manual acceptance checklist
 
-Run these checks after pulling the branch and starting the backend and frontend locally:
+Run and record these checks separately after starting the backend and frontend with the owner's development Hindsight configuration:
 
 1. Open the dashboard and confirm the browser can call `/health` and `/api/v1/cases` without CORS errors.
 2. Load demo data and confirm all three synthetic cases appear.
@@ -117,6 +119,6 @@ The three seeded records are too small for a statistically meaningful retrieval 
 
 ## 8. Conclusion
 
-The first LotLens vertical slice passes the current automated backend compile and test checks, with 29 pytest cases passing. The frontend TypeScript/Vite build also passed on the styling commit. These results validate the covered domain rules, API behaviour, selected Hindsight failure modes, and local CORS policy.
+The first LotLens vertical slice passes the current automated backend compile and test checks in CI, with 29 pytest cases passing. The project owner also confirmed that the backend pytest suite completed successfully in the local Windows virtual environment. The frontend TypeScript/Vite build passed in GitHub Actions.
 
-A live Hindsight smoke test and owner-run browser acceptance remain outstanding. The system remains a local development build and must not be exposed publicly or used with confidential production data until the security and operational release blockers are addressed.
+These results validate the covered domain rules, API behaviour, selected Hindsight failure modes, and local CORS middleware behaviour. They do not establish that the full UI workflow has been exercised against a live Hindsight bank. A live Hindsight smoke test and owner-run browser acceptance remain outstanding. The system remains a local development build and must not be exposed publicly or used with confidential production data until the security and operational release blockers are addressed.
