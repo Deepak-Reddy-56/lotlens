@@ -4,21 +4,19 @@
 
 LotLens is a Hindsight-powered manufacturing investigation agent. It helps quality engineers connect historical defect experiences, remember verified and unsuccessful corrective actions, and formulate evidence-backed next investigations.
 
-> Current status: first vertical slice under development. The Hindsight Cloud retain/recall/reflect proof of concept has passed a fixed three-case synthetic scenario. The application is not production-ready.
+> Current status: the first investigation vertical slice is implemented and merged into `main`. The application remains a development build, not a production-ready system.
 
 ## Start here
 - [Problem statement](docs/PROBLEM_STATEMENT.md)
 - [Requirements and MVP](docs/REQUIREMENTS.md)
 - [Architecture decision brief](docs/ARCHITECTURE.md)
-- [Six-role engineering board](docs/ENGINEERING_BOARD.md)
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md)
 - [First vertical-slice ADR](docs/DECISIONS/ADR-0002-first-vertical-slice-architecture.md)
 - [Database design / ERD](docs/DATABASE_DESIGN.md)
-- [Six-role implementation review](docs/ROLE_REVIEW.md)
 - [Hindsight memory design](docs/MEMORY_DESIGN.md)
 - [Hindsight Cloud setup](docs/HINDSIGHT_SETUP.md)
 - [Hindsight proof-of-concept results](docs/POC_RESULTS.md)
-- [Draft API contracts](docs/API_CONTRACTS.md)
+- [API contracts](docs/API_CONTRACTS.md)
 - [QA strategy](docs/QA_STRATEGY.md)
 - [Testing strategy](docs/TESTING_STRATEGY.md)
 - [Test report and manual acceptance checklist](docs/TEST_REPORT.md)
@@ -26,7 +24,7 @@ LotLens is a Hindsight-powered manufacturing investigation agent. It helps quali
 ## Architecture baseline
 - Backend: FastAPI + SQLAlchemy async.
 - Local database: SQLite; PostgreSQL supported through `DATABASE_URL`.
-- Agent memory: Hindsight Cloud Python SDK (async retain/recall/reflect).
+- Agent memory: Hindsight Cloud Python SDK (async retain, recall and reflect).
 - Frontend: React + TypeScript + Vite.
 - See ADR-0002 for trade-offs and current limitations.
 
